@@ -60,3 +60,51 @@ SQLite 데이터베이스를 편하게 사용하게 해주는 라이브러리이
 5. MainActivity 설정
 6. RecyclerView 설정 (xml, Adapter)
 7. AddActivity 생성
+
+
+
+### ROOM 생성 (1) Entitiy 생성
+#### sql을 편하게 사용해주는 라이브러리,이를 통해 편하게 db 관리 가능 
+
+#### Entitiy란?
+- 실체, 객체. 업무에 필요하고 유용한 정보를 저장, 관리하기 위한 집합
+- 정보를 저장할 수 있는 어떤 것, 장소 물건, 사람 등의 명사
+ex) 학생이란 엔티티 == 학번, 이름, 학점, 등록일자, 생일, 전공 등의 속성
+
+<pre><code>
+// romm- Contact.kt
+package com.example.mvvm_1.rom
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "contact")
+//형식을 위해 나타내줌. () 안의 내용 생략 가능
+
+data class Contact(
+    @PrimaryKey(autoGenerate = true)
+    var id: Long?,
+//말그대로 아이디
+    @ColumnInfo(name = "name")
+    var name: String,
+
+    @ColumnInfo(name = "number")
+    var number: String,
+
+    @ColumnInfo(name = "initial")
+    var initial: String
+)
+{
+
+    constructor() : this(null, "","","")
+    // primary constructor가 있는 경우
+    //secondary constructor는 this()생성자를 통해
+    // 직간접적으로 primarty constructor에 위임
+    // 보조생성자가 this 키워드를 사용하여 기본 생성자 호출
+   // dlqfurrkqt 없이 초기화하는 생성자 실행 
+   // {println("${this.name} 보조생성사 실행") } 
+   
+}
+
+</code></pre>
