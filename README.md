@@ -30,8 +30,9 @@
 # mvvm 예제
 ![예제 구조](https://blog.yena.io/assets/post-img19/190327-02-class-list.png)
 
-### 뷰 모델
-뷰모델은 UI를 위한 데이터를 가지고 있으며, 구성(configuration)이 변경되어도 살아남는다. (예를 들어 화면 회전이라던가, 언어 변경 등)
+### View Model 뷰 모델
+뷰모델은 UI를 위한 데이터를 가지고 있으며, 구성(configuration)이 변경되어도 살아남는다.
+(예를 들어 화면 회전이라던가, 언어 변경 등)
 AsyncTask는 액티비티나 프래그먼트의 생명 주기에서 자유로울 수 없지만, 뷰모델은 뷰와 분리되어 있기 때문에 액티비티가 Destroy 되었다가 다시 Create 되어도 종료되지 않고 데이터를 여전히 가지고 있다.
 
 
@@ -148,6 +149,15 @@ interface ContactDao {
 #### 인스턴스(Instance)란?
 메모리에 올라간 객체
 
+#### 추상 클래스 (Abstract Class)
+아직 구현되지 않고 선언만 된 추상메서드를 가지고 있는 클래스
+- 메서드가 구현되지 않아서 이 클래스를 직접 객체로 만들 수 없음
+- 반드시 상속을 받는 자식클래스 (SubClass) 가 필요
+- 상속을 통해 생성될 자식클래스에서 메서드 오버라이딩에 강제성을 부여하기 위해 사용
+
+#### RoomDatabase에서 추상 클래스를 사용하는 이유
+를 모르겠어 
+
 
 <pre><code>
 // ContactDatabase.kt
@@ -157,14 +167,21 @@ interface ContactDao {
 // Contact class가 entity다! 
 // SQLite 버전을 지정
 @Database(entities = [Contact::class],version = 1)
+//변경된적이 없고, 처음이라 1임
+** // 그럼 나중에 변경해야하는건가? **
 
+//RoomDatabase()를 상속 
 abstract class ContactDatabase : RoomDatabase() {
 
-// 여기 무슨소리지? 
+// 미리 만들어놓은 ContactsDao를 접근하게
+//abstract fun 이용
+// ContactsDao() 만들기
+
     abstract fun contactDao() : ContactDao
 
-// 데이터베이스 인스턴스를 싱글톤으로 사용하기 위해
-// companion object 에 만들기
+//어디서든 접근가능
+//중복 생성되지 않게
+//싱글톤으로 companion object 에 만들기
 
 
     companion object{
@@ -202,3 +219,106 @@ abstract class ContactDatabase : RoomDatabase() {
 
 
 </code></pre>
+
+### ROOM 생성 (4) Repository - 위 과정에서 만든 DB 인스턴스를 Repository에서 호출해서 사용하기 
+
+<pre><code>
+
+@InternalCoroutinesApi
+class ContactRepository(application: Application) {
+
+    @InternalCoroutinesApi
+    // Database, Dao, contacts 각각 초기화 
+    private val contactDatabase = ContactDatabase.getInstance(application)!!
+    private val contactDao : ContactDao = contactDatabase.contactDao()
+    private val contacts : LiveData<List<Contact>> = contactDao.getAll()
+
+
+
+// ViewModel에서 DB에 접근을 요청할 때 수행할 함수
+
+// 메인 스레드에서 Room DB에 접근하면 크래쉬 발생
+//별도의 스레드로 Room의 데이터에 접근
+
+    fun getAll() : LiveData<List<Contact>> {
+        return contacts
+    }
+
+    fun insert(contact: Contact){
+        try {
+            val thread = Thread(Runnable {
+
+                contactDao.insert(contact) })
+            thread.start()
+        } catch (e: Exception) {}
+
+    }
+
+    fun delete(contact: Contact) {
+        try {
+            val thread = Thread(Runnable {
+                contactDao.delete(contact)
+            })
+            thread.start()
+        } catch (e : Exception) { }
+    }
+
+}
+
+</code></pre>
+
+
+
+### View Model 생성
+<pre><code>
+ContactViewModel.kt
+//AndroidViewModel를 상속받는 ContactViewModel
+
+class ContactViewModel(application: Application) : AndroidViewModel(application) {
+
+//Repository : 뷰모델과 상호작용하기 위해 정리된 데이터 API를 들고 있는 클래스
+// 뷰모델은 Repository와 상호작용해야함!!!!! 
+//뷰모델은 DB나 서버에 직접접근하지 않고 Repository에 접근하며 데이터 관리
+//그래서 Reopositroy 의 DB 제어 함수 사용 
+
+    @InternalCoroutinesApi
+    private val repository = ContactRepository(application)
+    @InternalCoroutinesApi
+    private val contacts = repository.getAll()
+
+    @InternalCoroutinesApi
+    fun getAll() : LiveData<List<Contact>> {
+        return this.contacts
+    }
+
+    @InternalCoroutinesApi
+    fun insert(contact: Contact) {
+        repository.insert(contact)
+    }
+
+    @InternalCoroutinesApi
+    fun delete(contact: Contact) {
+
+        repository.delete(contact)
+    }
+
+
+}
+
+</code></pre>
+
+
+
+
+
+
+**질문리스트**
+1. // SQLite 버전을 지정
+@Database(entities = [Contact::class],version = 1)
+//변경된적이 없고, 처음이라 1임
+그럼 나중에 변경해야하는건가?
+
+2. RoomDatabase에서 추상 클래스를 사용하는 이유
+- RoomDattabase if부분도 자세히 이해가 안감솔직히
+
+3. 이거 서버통신이랑 어떻게 같이해야하냐.... 
