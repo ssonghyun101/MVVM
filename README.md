@@ -108,3 +108,97 @@ data class Contact(
 }
 
 </code></pre>
+
+
+### ROOM 생성 (2) SQL을 작성하기 위한 DAO 인터페이스 만들기
+
+<pre><code>
+//ContactDao.kt
+
+@Dao
+
+interface ContactDao {
+    annotation class Dao
+    
+    // 전체 연락처 리스트 반환 함수
+    // LiveData 반환
+    @Query("SELECT * FROM contact ORDER BY name ASC")
+    fun getAll() : LiveData<List<Contact>>
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // onConflict 속성
+    // 중복된 데이터의 경우 어떻게 처리할지 지정
+    //onConflictStrategt인터페이스 호출 ->
+    // REPLACE, INGNORE, APORT, FAIL, ROLLBACK 등 지정 가능 
+    fun insert(contact: Contact)
+
+    @Delete
+    fun delete(contact: Contact)
+}
+
+
+</code></pre>
+
+
+### ROOM 생성 (3) 실질적인 데이터베이스 인스턴스를 생성할 Database 클래스
+- RoomDatabase 클래스를 상속하는 추상 클래스로 생성 
+
+
+#### 인스턴스(Instance)란?
+메모리에 올라간 객체
+
+
+<pre><code>
+// ContactDatabase.kt
+
+// @Database 어노테이션을 이용해
+// entity를 정의
+// Contact class가 entity다! 
+// SQLite 버전을 지정
+@Database(entities = [Contact::class],version = 1)
+
+abstract class ContactDatabase : RoomDatabase() {
+
+// 여기 무슨소리지? 
+    abstract fun contactDao() : ContactDao
+
+// 데이터베이스 인스턴스를 싱글톤으로 사용하기 위해
+// companion object 에 만들기
+
+
+    companion object{
+    
+
+     
+        private var INSTANCE : ContactDatabase? = null
+        @InternalCoroutinesApi
+        
+        // 여러 스레드가 접근 못하게
+        // synchronized로 설정 
+        fun getInstance(context : Context) : ContactDatabase? {
+
+            if(INSTANCE == null){
+
+                synchronized(ContactDatabase::class){
+                //인스턴스 생성 
+                    INSTANCE = Room.databaseBuilder(context.applicationContext,
+                        ContactDatabase::class.java, "contact")
+                        // 데이터베이스가 갱신될 때
+                        //기존의 테이블을 버리고 새로 사용
+                        .fallbackToDestructiveMigration()
+                        .build()
+
+// 이렇게 만들어지는 DB인스턴스는
+// Repository에서 호출, 사용 
+
+                }
+            }
+            return INSTANCE
+
+        }
+    }
+}
+
+
+</code></pre>
