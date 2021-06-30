@@ -3,20 +3,13 @@ package com.example.mvvm_1
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Property.of
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvm_1.databinding.ActivityMainBinding
+import com.example.mvvm_1.rom.Contact
 import kotlinx.coroutines.InternalCoroutinesApi
-import java.time.format.DecimalStyle.of
-import java.time.temporal.WeekFields.of
-import java.util.EnumSet.of
-import java.util.List.of
-import java.util.Map.of
-import java.util.Optional.of
-import java.util.stream.Stream.of
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding

@@ -1,9 +1,10 @@
 @file:Suppress("AndroidUnresolvedRoomSqlReference")
 
-package com.example.mvvm_1
+package com.example.mvvm_1.rom
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.example.mvvm_1.rom.Contact
 
 @Dao
 

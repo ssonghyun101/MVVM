@@ -2,6 +2,9 @@ package com.example.mvvm_1
 
 import android.app.Application
 import androidx.lifecycle.LiveData
+import com.example.mvvm_1.rom.Contact
+import com.example.mvvm_1.rom.ContactDao
+import com.example.mvvm_1.rom.ContactDatabase
 import kotlinx.coroutines.InternalCoroutinesApi
 import java.lang.Exception
 

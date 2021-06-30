@@ -2,9 +2,9 @@ package com.example.mvvm_1
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mvvm_1.databinding.ItemContactBinding
+import com.example.mvvm_1.rom.Contact
 
 class ContactAdapter(val contactItemClick: (Contact) -> Unit, val contactItemLongClick: (Contact) -> Unit )
     : RecyclerView.Adapter<ContactAdapter.ViewHolder>(){
@@ -57,7 +57,8 @@ class ContactAdapter(val contactItemClick: (Contact) -> Unit, val contactItemLon
 
         }
     }
-
+// 뷰 갱신할 떄 사용
+    //데이터베이스 변경될떄마다 호출
     fun setContacts(contacts : List<Contact>) {
         this.contacts = contacts
         notifyDataSetChanged()

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.mvvm_1.databinding.ActivityAddBinding
+import com.example.mvvm_1.rom.Contact
 import kotlinx.coroutines.InternalCoroutinesApi
 
 class AddActivity : AppCompatActivity() {

@@ -3,6 +3,7 @@ package com.example.mvvm_1
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import com.example.mvvm_1.rom.Contact
 import kotlinx.coroutines.InternalCoroutinesApi
 
 class ContactViewModel(application: Application) : AndroidViewModel(application) {
